@@ -65,6 +65,10 @@ var game_2048 = {
     if(pos == -1)return ;
     game_var.numbers.splice(game_var.numbers.indexOf(player.number),1);
     game_var.players.splice(game_var.players.indexOf(player),1);
+    game_var.names.splice(game_var.names.indexOf(player.name),1);
+    game_var.scores.splice(game_var.scores.indexOf(player.score),1);
+    game_var.status.splice(game_var.status.indexOf(player.status),1);
+    game_var.board.splice(game_var.board.indexOf(player.board),1);
     // if(player.isInRoom){
     //   game_2048.leaveRoom(player);
     // }
@@ -207,10 +211,12 @@ ws.createServer(function(conn){
   });
   
   conn.on("close",function(code,reason){
+    console.log("离开");
     game_2048.removePlayer(conn);
   });
   
   conn.on("error",function(code,reason){
+    console.log("离开1")
     game_2048.removePlayer(conn);
   });
 }).listen(3001);
