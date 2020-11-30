@@ -9,6 +9,7 @@ var game_var={
   numbers:[],//存放玩家对应序列号随机产生
   scores:[],//存放玩家对应分数
   status:[],//存放玩家状态
+  board:[],
 }
 
 //game_2048用于存放使用的函数。
@@ -32,6 +33,7 @@ var game_2048 = {
     game_var.scores.push(0);
     //增加玩家初始状态:正在玩
     game_var.status.push(0);
+    game_var.board.push([]);
     player.sendText(JSON.stringify({
       type:"loginSuccess",
       number: player.number,
@@ -84,11 +86,15 @@ var game_2048 = {
     temname = [];
     temscore = [];
     temstatus = [];
+    temboard = [];
     for(i = 0;i < game_var.scores.length;i++){
       if(temscore.length == 0){
         temscore.push(game_var.scores[i]);
         temname.push(game_var.names[i]);
         temstatus.push(game_var.status[i]);
+        temboard.push(game_var.board[i])
+        console.log("temboard");
+        console.log(temboard);
         continue;
       }
       j = 0;
@@ -98,10 +104,13 @@ var game_2048 = {
       temscore.splice(j,0,game_var.scores[i]);
       temname.splice(j,0,game_var.names[i]);
       temstatus.splice(j,0,game_var.status[i]);
+      temboard.splice(j,0,game_var.board[i])
+      
     }
     game_var.names = temname;
     game_var.scores = temscore;
     game_var.status = temstatus;
+    game_var.board = temboard;
   },
 
   //对新入数据进行更新
@@ -110,8 +119,10 @@ var game_2048 = {
     //对应玩家把响应数据改入数组
     game_var.scores.splice(game_var.names.indexOf(player.name),1,player.score);
     game_var.status.splice(game_var.names.indexOf(player.name),1,player.status);
+    game_var.board.splice(game_var.names.indexOf(player.name),1,player.board);
 
     //这里调用新函数进行排名工作
+    console.log("sort");
     game_2048.rankdata();
 
     //服务器端向前端发送分数相关数据（格式转换+发送）
@@ -121,6 +132,7 @@ var game_2048 = {
       one.name = game_var.names[i];
       one.score = game_var.scores[i];
       one.status = game_var.status[i];
+      one.board = game_var.board[i];
       dataT.push(one);
     }
 
@@ -151,31 +163,20 @@ var game_2048 = {
 
   //更新聊天信息
   letschat:function(player,msg){
-    if(game.players.indexOf(player) == -1)return ;
+    if(game_2048.players.indexOf(player) == -1)return ;
     var msg = {
       type:"letschat",
       name: player.name,
       str: msg
     };
     msg = JSON.stringify(msg);
-    game.players.forEach(function(current){
-      current.sendText(msg);
+    game_2048.players.forEach(function(current){
+      if(current!==player){
+        current.sendText(msg);
+      }
     });
   },
 
-  //更新表情信息
-  letsmakeface:function(player,msg){
-    if(game.players.indexOf(player) == -1)return ;
-    var msg = {
-      type:"letsmakeface",
-      name: player.name,
-      facenum: msg
-    };
-    msg = JSON.stringify(msg);
-    game.players.forEach(function(current){
-      current.sendText(msg);
-    });
-  },
 }
 
 console.log("正在建立websocket");
@@ -193,20 +194,16 @@ ws.createServer(function(conn){
       console.log(conn.name+"["+conn.number+"]",str);
     } else if(msg.type=="data"){
       conn.name = msg.name;
-      console.log(conn.name);
       conn.score = msg.score;
       conn.status = msg.status;
+      conn.board = msg.board;
       game_2048.updatedata(conn);
       console.log("分数更新");
-    } else if(msg.type=="letschat"){
+    }else if(msg.type=="letschat"){
       conn.name = msg.name;
       game_2048.letschat(conn,msg.str);
       console.log(str);
-    } else if(msg.type=="letsmakeface"){
-      conn.name = msg.name;
-      game_2048.letschat(conn,msg.facenum);
-      console.log(str);
-    }
+    } 
   });
   
   conn.on("close",function(code,reason){
