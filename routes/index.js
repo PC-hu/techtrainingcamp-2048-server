@@ -163,14 +163,14 @@ var game_2048 = {
 
   //更新聊天信息
   letschat:function(player,msg){
-    if(game_2048.players.indexOf(player) == -1)return ;
+    if(game_var.players.indexOf(player) == -1)return ;
     var msg = {
       type:"letschat",
       name: player.name,
       str: msg
     };
     msg = JSON.stringify(msg);
-    game_2048.players.forEach(function(current){
+    game_var.players.forEach(function(current){
       if(current!==player){
         current.sendText(msg);
       }
