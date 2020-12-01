@@ -72,13 +72,21 @@ var game_2048 = {
     // if(player.isInRoom){
     //   game_2048.leaveRoom(player);
     // }
-    player.sendText(JSON.stringify({type:"logoutSuccess"}));
+    var dataT=[];
+    for(i = 0;i<game_var.scores.length;i++){
+      var one = {};
+      one.name = game_var.names[i];
+      one.score = game_var.scores[i];
+      one.status = game_var.status[i];
+      one.board = game_var.board[i];
+      dataT.push(one);
+    }
+
     var msg = {
-      type:"playerLogout",
-      name: player.name,
-      id: player.number,
-      count: game_var.players.length
+      type:"rank",
+      data:dataT,
     };
+    //console.log("有数据进来！");
     msg = JSON.stringify(msg);
     game_var.players.forEach(function(current){
       current.sendText(msg);
